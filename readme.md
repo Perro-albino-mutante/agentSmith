@@ -1,4 +1,4 @@
-This is a custom LLM harness that employs model from ollama, giving them the capacity to execute tools inside of your machine.  
+This is a custom LLM harness that employs models from ollama, giving them the capacity to execute tools inside of your machine.  
 The current tools include:  
 -Reading files.  
 -Writing files.  
