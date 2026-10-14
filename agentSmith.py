@@ -1,5 +1,15 @@
 import ollama, subprocess, os
 
+from agentconfig import MODEL, TERMINAL, MEMORYFILE
+
+# creating memory file if missing
+try:
+    with open(MEMORYFILE, "r") as memories:
+        memories.read()
+execpt FileNotFoundError:
+    with open(MEMORYFILE, "w") as memories:
+        memories.write("")
+
 os.chdir(os.path.expanduser("~/"))
 
 TOOLS = {}
@@ -80,7 +90,7 @@ def run_in_new_terminal(command: str) -> str:
     """Runs a command in a separate detached terminal."""
     os.system(f"notify-send -u normal 'Agent wants to run' '{command} in a new terminal'")
     if input(f"Run {command} in a new terminal? (Y/n): ") != "n":
-        subprocess.Popen(["kitty", "bash", "-c", f"{command}; exec bash"], start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen([TERMINAL, "bash", "-c", f"{command}; exec bash"], start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return print(f"Ran {command}")
     else:
         return print("User rejected execution")
@@ -89,14 +99,14 @@ def run_in_new_terminal(command: str) -> str:
 def remember(text: str) -> str:
     """Writes text to the memory file."""
     os.system(f"notify-send -u low 'Agent is writing to memory' '{text}'")
-    p = subprocess.run(f"echo '{text}' >> /home/gv/.agent/memory.md", shell=True, capture_output=True, text=True)
+    p = subprocess.run(f"echo '{text}' >> /home/gv/.agent/memory.txt", shell=True, capture_output=True, text=True)
     return p.stdout + p.stderr
 
 @tool
 def recall_memory() -> str:
     """Retrieves the contents of the memory file."""
     os.system(f"notify-send -u low 'Agent is recalling memory'")
-    return open("/home/gv/.agent/memory.md").read()
+    return open("/home/gv/.agent/memory.txt").read()
 
 messages = []
 
@@ -108,7 +118,7 @@ while True:
 
     for _ in range(10):   # inner agent loop, one task
         os.system(f"notify-send -u low 'Agent iteration' 'Number {_}'")
-        r = ollama.chat(model="qwen3:4b-instruct", messages=messages, tools=list(TOOLS.values()))
+        r = ollama.chat(model=f"{MODEL}", messages=messages, think=False, tools=list(TOOLS.values()))
         messages.append(r.message) 
         if not r.message.tool_calls:
             print(r.message.content)
