@@ -1,14 +1,14 @@
 import ollama, subprocess, os
 
-from agentconfig import MODEL, TERMINAL, MEMORYFILE
+from agentconfig import MODEL, TERMINAL, MEMORYFILE, SET_THINKING
 
 # creating memory file if missing
-try:
-    with open(MEMORYFILE, "r") as memories:
-        memories.read()
-execpt FileNotFoundError:
-    with open(MEMORYFILE, "w") as memories:
-        memories.write("")
+#try:
+#    with open(f"{MEMORYFILE}", "r") as memories:
+#        memories.read()
+#except FileNotFoundError:
+#    with open(f"{MEMORYFILE}", "w") as memories:
+#        memories.write("")
 
 os.chdir(os.path.expanduser("~/"))
 
@@ -99,14 +99,14 @@ def run_in_new_terminal(command: str) -> str:
 def remember(text: str) -> str:
     """Writes text to the memory file."""
     os.system(f"notify-send -u low 'Agent is writing to memory' '{text}'")
-    p = subprocess.run(f"echo '{text}' >> /home/gv/.agent/memory.txt", shell=True, capture_output=True, text=True)
+    p = subprocess.run(f"echo '{text}' >> ~/.agent/memory.txt", shell=True, capture_output=True, text=True)
     return p.stdout + p.stderr
 
 @tool
 def recall_memory() -> str:
     """Retrieves the contents of the memory file."""
     os.system(f"notify-send -u low 'Agent is recalling memory'")
-    return open("/home/gv/.agent/memory.txt").read()
+    return open("~/.agent/memory.txt").read()
 
 messages = []
 
@@ -118,7 +118,7 @@ while True:
 
     for _ in range(10):   # inner agent loop, one task
         os.system(f"notify-send -u low 'Agent iteration' 'Number {_}'")
-        r = ollama.chat(model=f"{MODEL}", messages=messages, think=False, tools=list(TOOLS.values()))
+        r = ollama.chat(model=f"{MODEL}", messages=messages, think=SET_THINKING, tools=list(TOOLS.values()))
         messages.append(r.message) 
         if not r.message.tool_calls:
             print(r.message.content)

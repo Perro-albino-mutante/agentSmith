@@ -1,3 +1,4 @@
-MODEL = "qwen3:4b-instruct"
+MODEL = "qwen3.5:2b"
 TERMINAL = "kitty"
-MEMORYFILE = "~/.agent/memory.text"
+MEMORYFILE = "~/.agent/memory.txt"
+SET_THINKING = False

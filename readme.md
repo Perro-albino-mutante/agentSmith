@@ -18,6 +18,7 @@ There is a file called agentconfig.py, inside there are three variables:
 MODEL = "qwen3:4b-instruct"
 TERMINAL = "kitty"
 MEMORYFILE = "~/.agent/memory.tet"
+SET_THINKING = False
 ```
 You can modify any of those variables to your liking.  
  
