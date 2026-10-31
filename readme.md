@@ -10,7 +10,7 @@ The current tools include:
 - Running shell commands.  
 - Running python commands.  
 - Running commands in a new terminal (kitty by default).  
-- Writing to a memory file (~/.agent/memory.tt by default).  
+- Writing to a memory file (~/.agent/memory.txt by default).  
 - Reading the memory file.  
   
 There is a file called agentconfig.py, inside there are three variables:  
@@ -19,6 +19,7 @@ MODEL = "qwen3:4b-instruct"
 TERMINAL = "kitty"
 MEMORYFILE = "~/.agent/memory.tet"
 SET_THINKING = False
+ITERATION_CAP = 10
 ```
 You can modify any of those variables to your liking.  
  

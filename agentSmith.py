@@ -1,13 +1,15 @@
 import ollama, subprocess, os
 
-from agentconfig import MODEL, TERMINAL, MEMORYFILE, SET_THINKING
+from agentconfig import MODEL, TERMINAL, MEMORYFILE, SET_THINKING, ITERATION_CAP
 
 # creating memory file if missing
-#try:
-#    with open(f"{MEMORYFILE}", "r") as memories:
+try:
+    open(MEMORYFILE).read()
+#    with open(MEMORYFILE, "r") as memories:
 #        memories.read()
-#except FileNotFoundError:
-#    with open(f"{MEMORYFILE}", "w") as memories:
+except FileNotFoundError:
+    open(MEMORYFILE).write("")
+#    with open(MEMORYFILE, "w") as memories:
 #        memories.write("")
 
 os.chdir(os.path.expanduser("~/"))
@@ -99,16 +101,18 @@ def run_in_new_terminal(command: str) -> str:
 def remember(text: str) -> str:
     """Writes text to the memory file."""
     os.system(f"notify-send -u low 'Agent is writing to memory' '{text}'")
-    p = subprocess.run(f"echo '{text}' >> ~/.agent/memory.txt", shell=True, capture_output=True, text=True)
+    p = subprocess.run(f"echo '{text}' >> {MEMORYFILE}", shell=True, capture_output=True, text=True)
     return p.stdout + p.stderr
 
 @tool
 def recall_memory() -> str:
     """Retrieves the contents of the memory file."""
     os.system(f"notify-send -u low 'Agent is recalling memory'")
-    return open("~/.agent/memory.txt").read()
+    return open(MEMORYFILE).read()
 
 messages = []
+
+messages.append({"role": "assistant", "content": f"{open(MEMORYFILE).read()}"})
 
 while True:
     user = input(">>> ")
@@ -116,12 +120,13 @@ while True:
         break
     messages.append({"role": "user", "content": user})
 
-    for _ in range(10):   # inner agent loop, one task
+    for _ in range(ITERATION_CAP):   # inner agent loop, one task
         os.system(f"notify-send -u low 'Agent iteration' 'Number {_}'")
         r = ollama.chat(model=f"{MODEL}", messages=messages, think=SET_THINKING, tools=list(TOOLS.values()))
         messages.append(r.message) 
         if not r.message.tool_calls:
             print(r.message.content)
+            os.system(f"notify-send -u low 'Agent has produced an answer'")
             break
         for call in r.message.tool_calls:
             name = call.function.name
